@@ -20,10 +20,7 @@ class CameraView: UIView {
     // scanner
     private var lastBarcodeDetectedTime: TimeInterval = 0
     private var scannerInterfaceView: ScannerInterfaceView
-    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .code39, .code39Mod43,
-                                                                       .ean13, .ean8, .code93,
-                                                                       .code128, .pdf417, .qr,
-                                                                       .aztec, .dataMatrix, .interleaved2of5]
+    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .ean13, .ean8]
     // camera
     private var ratioOverlayView: RatioOverlayView?
 
