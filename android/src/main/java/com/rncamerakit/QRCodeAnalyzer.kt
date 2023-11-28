@@ -15,7 +15,15 @@ class QRCodeAnalyzer (
     override fun analyze(image: ImageProxy) {
         val inputImage = InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
 
-        val scanner = BarcodeScanning.getClient()
+        val options = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(
+                Barcode.FORMAT_EAN_8,
+                Barcode.FORMAT_EAN_13,
+                Barcode.FORMAT_UPC_E
+            )
+            .build();
+
+        val scanner = BarcodeScanning.getClient(options)
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
                 val strBarcodes = mutableListOf<String>()
