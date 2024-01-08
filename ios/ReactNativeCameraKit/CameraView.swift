@@ -39,6 +39,7 @@ class CameraView: UIView {
     @objc var scanBarcode = false
     @objc var showFrame = false
     @objc var onReadCode: RCTDirectEventBlock?
+    @objc var onCameraShow: RCTDirectEventBlock?
     @objc var scanThrottleDelay = 2000
     @objc var frameColor: UIColor?
     @objc var laserColor: UIColor?
@@ -270,6 +271,7 @@ class CameraView: UIView {
         case .authorized:
             // The user has previously granted access to the camera.
             hasPermissionBeenGranted = true
+            onCameraShow?(["isInit": true])
             break
         case .notDetermined:
             // The user has not yet been presented with the option to grant video access.

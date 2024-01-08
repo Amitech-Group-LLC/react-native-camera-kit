@@ -488,6 +488,16 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         )
     }
 
+    private fun onCameraShow(isInit: Boolean) {
+        val event: WritableMap = Arguments.createMap()
+        event.putInt("isInit", isInit)
+        currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
+            id,
+            "onCameraShow",
+            event
+        )
+    }
+
     private fun onPictureTaken(uri: String) {
         val event: WritableMap = Arguments.createMap()
         event.putString("uri", uri)
@@ -642,6 +652,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         if (requiredPermissions.all {
                     ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
                 }) {
+            onCameraShow(true)
             return true
         }
         ActivityCompat.requestPermissions(
