@@ -124,7 +124,10 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (hasPermissions()) {
-            viewFinder.post { setupCamera() }
+            viewFinder.post { 
+                setupCamera()
+            }
+
         }
     }
 
@@ -326,6 +329,9 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
             // Attach the viewfinder's surface provider to preview use case
             preview?.setSurfaceProvider(viewFinder.surfaceProvider)
+
+            onCameraShow(true)
+            
         } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc)
 
@@ -480,7 +486,6 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         }
 
         val event: WritableMap = Arguments.createMap()
-        event.putBoolean("orientation", remappedOrientation)
         currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
                 id,
                 "onOrientationChange",
@@ -490,7 +495,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
     private fun onCameraShow(isInit: Boolean) {
         val event: WritableMap = Arguments.createMap()
-        event.putInt("isInit", isInit)
+        event.putBoolean("isInit", isInit)
         currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
             id,
             "onCameraShow",
@@ -652,7 +657,6 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         if (requiredPermissions.all {
                     ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
                 }) {
-            onCameraShow(true)
             return true
         }
         ActivityCompat.requestPermissions(
