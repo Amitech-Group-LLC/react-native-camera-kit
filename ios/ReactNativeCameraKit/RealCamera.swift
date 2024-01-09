@@ -32,6 +32,7 @@ class RealCamera: NSObject, CameraProtocol, AVCaptureMetadataOutputObjectsDelega
     private var resetFocus: (() -> Void)?
     private var focusFinished: (() -> Void)?
     private var onBarcodeRead: ((_ barcode: String) -> Void)?
+    private var onShowCallback:  (() -> Void)?
     private var scannerFrameSize: CGRect? = nil
     private var onOrientationChange: RCTDirectEventBlock?
     private var onZoomCallback: RCTDirectEventBlock?
@@ -155,6 +156,8 @@ class RealCamera: NSObject, CameraProtocol, AVCaptureMetadataOutputObjectsDelega
         self.update(zoom: self.zoom)
     }
     
+   
+    
     func update(zoom: Double?) {
         sessionQueue.async {
             self.zoom = zoom
@@ -249,7 +252,14 @@ class RealCamera: NSObject, CameraProtocol, AVCaptureMetadataOutputObjectsDelega
             }
         }
     }
-
+    func update(onShowCallback: (() -> Void)?){
+        self.onShowCallback = onShowCallback
+        if onShowCallback != nil {
+                sessionQueue.async {
+                    onShowCallback?()
+                }
+        }
+    }
     func update(flashMode: FlashMode) {
         self.flashMode = flashMode
     }

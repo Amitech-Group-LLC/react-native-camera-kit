@@ -17,7 +17,8 @@ class SimulatorCamera: CameraProtocol {
     private var wideAngleZoomFactor: Double = 2.0
     private var zoom: Double?
     private var maxZoom: Double?
-
+    private var onShowCallback:  (() -> Void)?
+    
     var previewView: UIView { mockPreview }
 
     private var fakeFocusFinishedTimer: Timer?
@@ -167,6 +168,15 @@ class SimulatorCamera: CameraProtocol {
                                  supportedBarcodeType: [AVMetadataObject.ObjectType],
                                  onBarcodeRead: ((_ barcode: String) -> Void)?) {}
     func update(scannerFrameSize: CGRect?) {}
+    
+    func update(onShowCallback: (() -> Void)?){
+        self.onShowCallback = onShowCallback
+        if onShowCallback != nil {
+            DispatchQueue.main.async {
+                onShowCallback?()
+            }
+        }
+    }
 
     func capturePicture(onWillCapture: @escaping () -> Void,
                         onSuccess: @escaping (_ imageData: Data, _ thumbnailData: Data?) -> (),

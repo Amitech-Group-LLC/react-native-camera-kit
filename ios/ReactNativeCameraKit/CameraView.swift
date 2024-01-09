@@ -131,6 +131,9 @@ class CameraView: UIView {
         focusInterfaceView.frame = bounds
 
         ratioOverlayView?.frame = bounds
+
+        camera.update(onShowCallback: self.onInitCamera)
+        
     }
 
     override func removeReactSubview(_ subview: UIView) {
@@ -225,6 +228,16 @@ class CameraView: UIView {
         if changedProps.contains("maxZoom") {
             camera.update(maxZoom: maxZoom?.doubleValue)
         }
+        if changedProps.contains("onCameraShow") {
+            DispatchQueue.main.async {
+//                self.onInitCamera()
+//                onCameraShow?(["isInit": true])
+            }
+//            sessionQueue.async {
+//                onCameraShow?(["isInit": true])
+//            }
+
+        }
     }
 
     // MARK: Public
@@ -271,7 +284,8 @@ class CameraView: UIView {
         case .authorized:
             // The user has previously granted access to the camera.
             hasPermissionBeenGranted = true
-            onCameraShow?(["isInit": true])
+            
+//            onCameraShow?(["isInit": true])
             break
         case .notDetermined:
             // The user has not yet been presented with the option to grant video access.
@@ -333,6 +347,10 @@ class CameraView: UIView {
         lastBarcodeDetectedTime = now
 
         onReadCode?(["codeStringValue": barcode])
+    }
+    
+    private func onInitCamera() {
+        onCameraShow?(["isInit": true])
     }
 
     // MARK: - Gesture selectors

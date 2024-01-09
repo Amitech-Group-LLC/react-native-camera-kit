@@ -27,6 +27,8 @@ protocol CameraProtocol: AnyObject, FocusInterfaceViewDelegate {
                                  onBarcodeRead: ((_ barcode: String) -> Void)?)
     func update(scannerFrameSize: CGRect?)
 
+    func update(onShowCallback: (() -> Void)?)
+
     func capturePicture(onWillCapture: @escaping () -> Void,
                         onSuccess: @escaping (_ imageData: Data, _ thumbnailData: Data?) -> (),
                         onError: @escaping (_ message: String) -> ())
