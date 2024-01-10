@@ -23,8 +23,15 @@ export type CaptureData = {
   size?: number;
 };
 
+type NativeEvent<T> = {
+  nativeEvent: T
+}
+
 export type CameraApi = {
   capture: () => Promise<CaptureData>;
   requestDeviceCameraAuthorization: () => Promise<boolean>;
   checkDeviceCameraAuthorizationStatus: () => Promise<boolean>;
+  onCameraShow?: (e:NativeEvent<{ isInit: string }>) => void
+  onReadCode?: (e:NativeEvent<{ codeStringValue: string }>) => void
+
 };

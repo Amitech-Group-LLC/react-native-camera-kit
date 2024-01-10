@@ -13,6 +13,12 @@ export type OnOrientationChangeData = {
   };
 };
 
+export type OnCameraInitData = {
+  nativeEvent: {
+    orientation: Orientation;
+  };
+};
+
 export type OnZoom = {
   nativeEvent: {
     zoom: number;
@@ -81,6 +87,7 @@ export interface CameraProps {
    * />
    * ```
    */
+  onCameraShow?: (event: OnCameraInitData) => void;
   onZoom?: (event: OnZoom) => void;
   /** **Android only**. Triggered when camera fails to initialize */
   onError?: (event: { nativeEvent: { errorMessage: number } }) => void;
