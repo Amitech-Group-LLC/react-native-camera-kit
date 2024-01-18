@@ -42,6 +42,8 @@ RCT_EXTERN_METHOD(capture:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_PROPPERTY(availableQRTypes, NSArray)
+
 RCT_EXTERN_METHOD(checkDeviceCameraAuthorizationStatus:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 

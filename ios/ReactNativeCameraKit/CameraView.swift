@@ -20,7 +20,9 @@ class CameraView: UIView {
     // scanner
     private var lastBarcodeDetectedTime: TimeInterval = 0
     private var scannerInterfaceView: ScannerInterfaceView
-    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .ean13, .ean8]
+    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .code39, .code39Mod43, .ean13, .ean8, .code93, .code128, .pdf417, .qr, .aztec, .dataMatrix, .interleaved2of5]
+//    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .ean13, .ean8]
+
     // camera
     private var ratioOverlayView: RatioOverlayView?
 
@@ -43,6 +45,7 @@ class CameraView: UIView {
     @objc var scanThrottleDelay = 2000
     @objc var frameColor: UIColor?
     @objc var laserColor: UIColor?
+    @objc var availableQRTypes: NSArray?
     // other
     @objc var onOrientationChange: RCTDirectEventBlock?
     @objc var onZoom: RCTDirectEventBlock?
@@ -68,9 +71,52 @@ class CameraView: UIView {
         }
     }
 
+    private func convertBarCodeEnumToString(barcodeType: AVMetadataObject.ObjectType) -> String {
+        var stringValue: String = "";
+
+        switch(barcodeType) {
+            case .upce:
+                stringValue = "upce"
+            case .code39:
+                stringValue = "code39"
+            case .code39Mod43:
+                stringValue = "code39Mod43"
+            case .ean13:
+                stringValue = "ean13"
+            case .ean8:
+                stringValue = "ean8"
+            case .ean8:
+                stringValue = "ean8"
+            case .code93:
+                stringValue = "code93"
+            case .code128:
+                stringValue = "code128"
+            case .pdf417:
+                stringValue = "pdf417"
+            case .qr:
+                stringValue = "qr"
+            case .aztec:
+                stringValue = "aztec"
+            case .dataMatrix:
+                stringValue = "dataMatrix"
+            case .interleaved2of5:
+                stringValue = "interleaved2of5"
+        default:
+            stringValue = ""
+        }
+        
+        return stringValue
+        
+    }
+
     private func setupCamera() {
         if (hasPropBeenSetup && hasPermissionBeenGranted && !hasCameraBeenSetup) {
             hasCameraBeenSetup = true
+            
+            let isValid = availableQRTypes!.contains(convertBarCodeEnumToString(barcodeType: .ean8));
+            
+            let filteredQRTypes = availableQRTypes != nil ? supportedBarcodeType.filter { type in availableQRTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }: supportedBarcodeType
+//            let filteredTypes = supportedBarcodeType.filter { type in availableTypes.contains(type) }
             camera.setup(cameraType: cameraType, supportedBarcodeType: scanBarcode && onReadCode != nil ? supportedBarcodeType : [])
         }
     }
