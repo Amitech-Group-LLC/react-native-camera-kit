@@ -36,6 +36,7 @@ class CameraView: UIView {
     @objc var ratioOverlay: String?
     @objc var ratioOverlayColor: UIColor?
     // scanner
+    @objc var scannerPosition: String?
     @objc var scanBarcode = false
     @objc var showFrame = false
     @objc var onReadCode: RCTDirectEventBlock?
@@ -133,7 +134,7 @@ class CameraView: UIView {
         ratioOverlayView?.frame = bounds
 
         camera.update(onShowCallback: self.onInitCamera)
-        
+
     }
 
     override func removeReactSubview(_ subview: UIView) {
@@ -144,11 +145,23 @@ class CameraView: UIView {
     // Called once when all props have been set, then every time one is updated
     override func didSetProps(_ changedProps: [String]) {
         hasPropBeenSetup = true
-
+        
         // Camera settings
         if changedProps.contains("cameraType") {
             camera.update(cameraType: cameraType)
         }
+        
+        if(changedProps.contains("scannerPosition")) {
+            if self.scannerPosition == "center" && self.showFrame {
+                let centerFrame = self.scannerInterfaceView.frameSize
+                camera.update(scannerFrameSize: centerFrame);
+            } else if self.scannerPosition == "top" && self.showFrame {
+                let centerFrame = self.scannerInterfaceView.frameSize
+                let topFrame = CGRect(x: centerFrame.origin.x, y: centerFrame.origin.y / 2, width: centerFrame.size.width, height: centerFrame.size.height)
+                camera.update(scannerFrameSize: topFrame);
+            }
+        }
+        
         if changedProps.contains("flashMode") {
             camera.update(flashMode: flashMode)
         }
@@ -228,16 +241,6 @@ class CameraView: UIView {
         if changedProps.contains("maxZoom") {
             camera.update(maxZoom: maxZoom?.doubleValue)
         }
-        if changedProps.contains("onCameraShow") {
-            DispatchQueue.main.async {
-//                self.onInitCamera()
-//                onCameraShow?(["isInit": true])
-            }
-//            sessionQueue.async {
-//                onCameraShow?(["isInit": true])
-//            }
-
-        }
     }
 
     // MARK: Public
@@ -284,8 +287,6 @@ class CameraView: UIView {
         case .authorized:
             // The user has previously granted access to the camera.
             hasPermissionBeenGranted = true
-            
-//            onCameraShow?(["isInit": true])
             break
         case .notDetermined:
             // The user has not yet been presented with the option to grant video access.
@@ -348,7 +349,7 @@ class CameraView: UIView {
 
         onReadCode?(["codeStringValue": barcode])
     }
-    
+        
     private func onInitCamera() {
         onCameraShow?(["isInit": true])
     }
