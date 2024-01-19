@@ -127,7 +127,11 @@ class CameraView: UIView {
 
         scannerInterfaceView.frame = bounds
         // If frame size changes, we have to update the scanner
-        camera.update(scannerFrameSize: showFrame ? scannerInterfaceView.frameSize : nil)
+        if(showFrame) {
+            updateFrameOffset()
+        } else {
+            camera.update(scannerFrameSize: nil)
+        }
 
         focusInterfaceView.frame = bounds
 
@@ -152,13 +156,10 @@ class CameraView: UIView {
         }
         
         if(changedProps.contains("scannerPosition")) {
-            if self.scannerPosition == "center" && self.showFrame {
-                let centerFrame = self.scannerInterfaceView.frameSize
-                camera.update(scannerFrameSize: centerFrame);
-            } else if self.scannerPosition == "top" && self.showFrame {
-                let centerFrame = self.scannerInterfaceView.frameSize
-                let topFrame = CGRect(x: centerFrame.origin.x, y: centerFrame.origin.y / 2, width: centerFrame.size.width, height: centerFrame.size.height)
-                camera.update(scannerFrameSize: topFrame);
+            if(showFrame) {
+                updateFrameOffset()
+            } else {
+                self.camera.update(scannerFrameSize: nil)
             }
         }
         
@@ -206,8 +207,11 @@ class CameraView: UIView {
         if changedProps.contains("showFrame") || changedProps.contains("scanBarcode") {
             DispatchQueue.main.async {
                 self.scannerInterfaceView.isHidden = !self.showFrame
-
-                self.camera.update(scannerFrameSize: self.showFrame ? self.scannerInterfaceView.frameSize : nil)
+                if(self.showFrame) {
+                    self.updateFrameOffset();
+                } else {
+                    self.camera.update(scannerFrameSize: nil)
+                }
             }
         }
 
@@ -348,6 +352,20 @@ class CameraView: UIView {
         lastBarcodeDetectedTime = now
 
         onReadCode?(["codeStringValue": barcode])
+    }
+    
+    private func updateFrameOffset() {
+        if self.scannerPosition == "center" && self.showFrame {
+            let centerFrame = self.scannerInterfaceView.frameSize
+            print("center")
+            camera.update(scannerFrameSize: centerFrame);
+        } else if self.scannerPosition == "top" && self.showFrame {
+            let centerFrame = self.scannerInterfaceView.frameSize
+            print("top", centerFrame)
+            let topFrame = CGRect(x: centerFrame.origin.x, y: centerFrame.origin.y / 2, width: centerFrame.size.width, height: centerFrame.size.height)
+            print("after top: ", topFrame)
+            camera.update(scannerFrameSize: topFrame);
+        }
     }
         
     private func onInitCamera() {
