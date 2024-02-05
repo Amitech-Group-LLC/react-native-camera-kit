@@ -57,6 +57,22 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         view.setCameraType(type)
     }
 
+    @ReactProp(name = "initBarCodeTypes")
+    fun setInitBarCodeTypes(view: CKCamera, types: ReadableArray?) {
+
+        val barCodeTypes = ArrayList<String>()
+        if(types != null && types.size() > 0){
+            for (i in 0 until types.size()) {
+                val type = types.getString(i)
+                type?.let {
+                    barCodeTypes.add(it)
+                }
+            }
+        }
+        
+        view.setInitBarCodeTypes(barCodeTypes.toTypedArray())
+    }
+
     @ReactProp(name = "flashMode")
     fun setFlashMode(view: CKCamera, mode: String?) {
         view.setFlashMode(mode)

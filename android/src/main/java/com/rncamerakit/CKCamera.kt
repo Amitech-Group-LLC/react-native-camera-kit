@@ -44,7 +44,7 @@ import android.graphics.RectF
 
 class RectOverlay constructor(context: Context) :
         View(context) {
-
+    private val qrTypes: MutableList<String> = mutableListOf()
     private val rectBounds: MutableList<RectF> = mutableListOf()
     private val paint = Paint().apply {
         style = Paint.Style.STROKE
@@ -87,6 +87,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     private var shutterAnimationDuration: Int = 50
     private var shutterPhotoSound: Boolean = true
     private var effectLayer = View(context)
+    private var qrTypes: Array<String>? = null
 
     // Camera Props
     private var lensType = CameraSelector.LENS_FACING_BACK
@@ -307,11 +308,11 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         val useCases = mutableListOf(preview, imageCapture)
 
         if (scanBarcode) {
-            val analyzer = QRCodeAnalyzer { barcodes ->
+            val analyzer = QRCodeAnalyzer ({ barcodes ->
                 if (barcodes.isNotEmpty()) {
                     onBarcodeRead(barcodes)
                 }
-            }
+            }, qrTypes)
             imageAnalyzer!!.setAnalyzer(cameraExecutor, analyzer)
             useCases.add(imageAnalyzer)
         }
@@ -611,6 +612,12 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         val restartCamera = lensType != newLensType
         lensType = newLensType
         if (restartCamera) bindCameraUseCases()
+    }
+
+    fun setInitBarCodeTypes(qrCodeTypes: Array<String>) {
+        if(qrCodeTypes != null) {
+            qrTypes = qrCodeTypes
+        }
     }
 
     fun setOutputPath(path: String) {

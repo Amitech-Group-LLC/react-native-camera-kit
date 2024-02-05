@@ -15,6 +15,7 @@
 
 @interface RCT_EXTERN_MODULE(CKCameraManager, RCTViewManager)
 
+RCT_EXPORT_VIEW_PROPERTY(availableQRTypes, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(cameraType, CKCameraType)
 RCT_EXPORT_VIEW_PROPERTY(flashMode, CKFlashMode)
 RCT_EXPORT_VIEW_PROPERTY(torchMode, CKTorchMode)
