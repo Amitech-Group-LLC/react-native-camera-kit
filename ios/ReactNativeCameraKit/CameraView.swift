@@ -76,7 +76,7 @@ class CameraView: UIView {
         if (hasPropBeenSetup && hasPermissionBeenGranted && !hasCameraBeenSetup) {
             hasCameraBeenSetup = true
             
-            let isValid = initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: .ean8));
+            // let isValid = initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: .ean8));
             
             let filteredQRTypes = initBarCodeTypes != nil ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }: supportedBarcodeType
 //            let filteredTypes = supportedBarcodeType.filter { type in availableTypes.contains(type) }
