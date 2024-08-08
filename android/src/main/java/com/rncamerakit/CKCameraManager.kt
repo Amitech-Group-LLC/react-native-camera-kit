@@ -103,6 +103,11 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         view.setMaxZoom(factor)
     }
 
+    @ReactProp(name = "scanThrottleDelay", defaultInt = 2000)
+    fun setScanThrottleDelay(view: CKCamera, factor: Int) {
+        view.setScanThrottleDelay(factor)
+    }
+
     @ReactProp(name = "scanBarcode")
     fun setScanBarcode(view: CKCamera, enabled: Boolean) {
         view.setScanBarcode(enabled)

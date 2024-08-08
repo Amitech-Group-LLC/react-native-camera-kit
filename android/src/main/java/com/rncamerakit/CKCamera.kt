@@ -103,7 +103,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     private var scanBarcode: Boolean = false
     private var frameColor = Color.GREEN
     private var laserColor = Color.RED
-
+    private var scanThrottleDelay: Int = 20000
     private fun getActivity() : Activity {
         return currentContext.currentActivity!!
     }
@@ -464,14 +464,20 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         rectOverlay.drawRectBounds(focusRects)
     }
 
+    private var lastBarcodeReadTime: Long = 0L
+
     private fun onBarcodeRead(barcodes: List<String>) {
-        val event: WritableMap = Arguments.createMap()
-        event.putString("codeStringValue", barcodes.first())
-        currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastBarcodeReadTime >= scanThrottleDelay) {
+            lastBarcodeReadTime = currentTime
+            val event: WritableMap = Arguments.createMap()
+            event.putString("codeStringValue", barcodes.first())
+            currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
                 id,
                 "onReadCode",
                 event
-        )
+            )
+        }
     }
 
     private fun onOrientationChange(orientation: Int) {
@@ -602,6 +608,10 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         val restartCamera = enabled != scanBarcode
         scanBarcode = enabled
         if (restartCamera) bindCameraUseCases()
+    }
+
+    fun setScanThrottleDelay(delay: Int) {
+        scanThrottleDelay = delay
     }
 
     fun setCameraType(type: String = "back") {
