@@ -52,6 +52,29 @@ public enum FlashMode: Int, CustomStringConvertible {
     }
 }
 
+@objc(CKMaxPhotoQualityPrioritization)
+public enum MaxPhotoQualityPrioritization: Int, CustomStringConvertible {
+    case speed
+    case balanced
+    case quality
+    
+    var avQualityPrioritization: AVCapturePhotoOutput.QualityPrioritization {
+        switch self {
+        case .speed: return .speed
+        case .balanced: return .balanced
+        case .quality: return .quality
+        }
+    }
+
+    public var description: String {
+        switch self {
+        case .speed: return "speed"
+        case .balanced: return "balanced"
+        case .quality: return "quality"
+        }
+    }
+}
+
 @objc(CKTorchMode)
 public enum TorchMode: Int, CustomStringConvertible {
     case on
@@ -101,6 +124,19 @@ public enum ZoomMode: Int, CustomStringConvertible {
         switch self {
         case .on: return "on"
         case .off: return "off"
+        }
+    }
+}
+
+@objc(CKResizeMode)
+public enum ResizeMode: Int, CustomStringConvertible {
+    case cover
+    case contain
+
+    public var description: String {
+        switch self {
+        case .cover: return "cover"
+        case .contain: return "contain"
         }
     }
 }

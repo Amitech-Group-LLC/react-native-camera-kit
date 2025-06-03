@@ -1,6 +1,7 @@
 package com.rncamerakit
 
 import android.annotation.SuppressLint
+import android.util.Size
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -44,15 +45,17 @@ val typesMap = mapOf(
     "aztec" to Barcode.FORMAT_AZTEC
 )
 
-class QRCodeAnalyzer(
-    private val onQRCodesDetected: (qrCodes: List<String>) -> Unit,
+class QRCodeAnalyzer (
+    private val onQRCodesDetected: (qrCodes: List<Barcode>, imageSize: Size) -> Unit,
     val qrTypes: Array<String>?
 ) : ImageAnalysis.Analyzer {
     @SuppressLint("UnsafeExperimentalUsageError")
     @ExperimentalGetImage
     override fun analyze(image: ImageProxy) {
+        val mediaImage = image.image ?: return
 
-        val inputImage = InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
+        val inputImage = InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees)
+
         var barcodeFormats: List<Int?>
         if(qrTypes != null){
             barcodeFormats = qrTypes.map { typesMap[it] }
@@ -73,13 +76,13 @@ class QRCodeAnalyzer(
         val scanner = BarcodeScanning.getClient(options)
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
-                val strBarcodes = mutableListOf<String>()
+                val strBarcodes = mutableListOf<Barcode>()
                 barcodes.forEach { barcode ->
-                    strBarcodes.add(barcode.rawValue ?: return@forEach)
+                    strBarcodes.add(barcode ?: return@forEach)
                 }
-                onQRCodesDetected(strBarcodes)
+                onQRCodesDetected(strBarcodes, Size(image.width, image.height))
             }
-            .addOnCompleteListener{
+            .addOnCompleteListener {
                 image.close()
             }
     }

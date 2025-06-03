@@ -1,19 +1,16 @@
 import React from 'react';
-import { requireNativeComponent, findNodeHandle, NativeModules, processColor } from 'react-native';
-import { CameraApi } from './types';
-import { CameraProps } from './Camera';
+import { findNodeHandle, processColor } from 'react-native';
+import type { CameraApi } from './types';
+import type { CameraProps } from './CameraProps';
+import NativeCamera from './specs/CameraNativeComponent';
+import NativeCameraKitModule from './specs/NativeCameraKitModule';
 
-const { RNCameraKitModule } = NativeModules;
-const NativeCamera = requireNativeComponent('CKCameraManager');
+const Camera = React.forwardRef<CameraApi, CameraProps>((props, ref) => {
+  const nativeRef = React.useRef(null);
 
-const Camera = React.forwardRef((props: CameraProps, ref) => {
-  const nativeRef = React.useRef();
-
-  React.useImperativeHandle<any, CameraApi>(ref, () => ({
+  React.useImperativeHandle(ref, () => ({
     capture: async (options = {}) => {
-      // Because RN doesn't support return types for ViewManager methods
-      // we must use the general module and tell it what View it's supposed to be using
-      return await RNCameraKitModule.capture(options, findNodeHandle(nativeRef.current ?? null));
+      return await NativeCameraKitModule.capture(options, findNodeHandle(nativeRef.current) ?? undefined);
     },
     requestDeviceCameraAuthorization: () => {
       throw new Error('Not implemented');
@@ -24,10 +21,11 @@ const Camera = React.forwardRef((props: CameraProps, ref) => {
   }));
 
   const transformedProps: CameraProps = { ...props };
-  transformedProps.ratioOverlayColor = processColor(props.ratioOverlayColor);
-  transformedProps.frameColor = processColor(props.frameColor);
-  transformedProps.laserColor = processColor(props.laserColor);
+  transformedProps.ratioOverlayColor = processColor(props.ratioOverlayColor) as any;
+  transformedProps.frameColor = processColor(props.frameColor) as any;
+  transformedProps.laserColor = processColor(props.laserColor) as any;
 
+  // @ts-expect-error props for codegen differ a bit from the user-facing ones
   return <NativeCamera style={{ minWidth: 100, minHeight: 100 }} ref={nativeRef} {...transformedProps} />;
 });
 
