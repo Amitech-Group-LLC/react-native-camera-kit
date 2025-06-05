@@ -523,7 +523,6 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
             UIManagerHelper
                 .getEventDispatcherForReactTag(currentContext, id)
                 ?.dispatchEvent(ReadCodeEvent(surfaceId, id, barcodes.first().rawValue, codeFormat.code))
-            )
         }
     }
 
@@ -553,13 +552,10 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun onCameraShow(isInit: Boolean) {
-        val event: WritableMap = Arguments.createMap()
-        event.putBoolean("isInit", isInit)
-        currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
-            id,
-            "onCameraShow",
-            event
-        )
+         val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
+         UIManagerHelper
+             .getEventDispatcherForReactTag(currentContext, id)
+             ?.dispatchEvent(OnCameraShowEvent(surfaceId, id, isInit))
     }
 
     private fun onPictureTaken(uri: String) {

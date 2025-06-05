@@ -48,6 +48,7 @@ export interface NativeProps extends ViewProps {
   shutterPhotoSound?: boolean;
   onCaptureButtonPressIn?: DirectEventHandler<{}>;
   onCaptureButtonPressOut?: DirectEventHandler<{}>;
+  onCameraShow?: DirectEventHandler<{ isInit: boolean }>;
 
   // not mentioned in props but available on the native side
   shutterAnimationDuration?: Int32;

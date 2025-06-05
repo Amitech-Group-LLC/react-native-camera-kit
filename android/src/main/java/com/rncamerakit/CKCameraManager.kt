@@ -52,16 +52,16 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     }
 
     override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
-        return MapBuilder.of(
-            OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"),
-            ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"),
-            "onCameraShow", MapBuilder.of("registrationName", "onCameraShow"),
-            PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"),
-            ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"),
-            ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"),
-            CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"),
-            CaptureButtonPressOutEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressOut")
-        )
+        return MapBuilder.builder<String, Any>()
+            .put(OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"))
+            .put(ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"))
+            .put(OnCameraShowEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCameraShow"))
+            .put(PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"))
+            .put(ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"))
+            .put(ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"))
+            .put(CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"))
+            .put(CaptureButtonPressOutEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressOut"))
+            .build()
     }
 
     @ReactProp(name = "cameraType")
@@ -116,7 +116,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     }
 
     @ReactProp(name = "scanThrottleDelay", defaultInt = 2000)
-    fun setScanThrottleDelay(view: CKCamera, factor: Int) {
+    override fun setScanThrottleDelay(view: CKCamera, factor: Int) {
         view.setScanThrottleDelay(factor)
     }
 
@@ -175,8 +175,6 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     override fun setResetFocusWhenMotionDetected(view: CKCamera?, value: Boolean) = Unit
 
     override fun setResizeMode(view: CKCamera?, value: String?) = Unit
-
-    override fun setScanThrottleDelay(view: CKCamera?, value: Int) = Unit
 
     override fun setMaxPhotoQualityPrioritization(view: CKCamera?, value: String?) = Unit
 }

@@ -86,7 +86,9 @@ public class CameraView: UIView {
         if hasPropBeenSetup && hasPermissionBeenGranted && !hasCameraBeenSetup {
             hasCameraBeenSetup = true
 
-            let filteredQRTypes = initBarCodeTypes != nil ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }: supportedBarcodeType
+            let filteredQRTypes = initBarCodeTypes != nil
+                ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }
+                : supportedBarcodeType
 
             #if targetEnvironment(macCatalyst)
             // Force front camera on Mac Catalyst during initial setup
@@ -258,7 +260,9 @@ public class CameraView: UIView {
 
         // Scanner
         if changedProps.contains("scanBarcode") || changedProps.contains("onReadCode") {
-            let filteredQRTypes = initBarCodeTypes != nil ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }: supportedBarcodeType
+            let filteredQRTypes = initBarCodeTypes != nil
+                ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }
+                : supportedBarcodeType
 
             camera.isBarcodeScannerEnabled(scanBarcode,
                                            supportedBarcodeTypes: filteredQRTypes,
@@ -398,7 +402,7 @@ public class CameraView: UIView {
         #endif
     }
 
-    private func convertBarCodeEnumToString(barcodeType: AVMetadataObject.ObjectType) -> String {
+    private func convertBarCodeEnumToString(barcodeType: CodeFormat) -> String {
         var stringValue: String = "";
 
         switch(barcodeType) {
@@ -406,8 +410,8 @@ public class CameraView: UIView {
                 stringValue = "upce"
             case .code39:
                 stringValue = "code39"
-            case .code39Mod43:
-                stringValue = "code39Mod43"
+//             case .code39Mod43:
+//                 stringValue = "code39Mod43"
             case .ean13:
                 stringValue = "ean13"
             case .ean8:
@@ -426,10 +430,10 @@ public class CameraView: UIView {
                 stringValue = "aztec"
             case .dataMatrix:
                 stringValue = "dataMatrix"
-            case .interleaved2of5:
-                stringValue = "interleaved2of5"
-        default:
-            stringValue = ""
+//             case .interleaved2of5:
+//                 stringValue = "interleaved2of5"
+            default:
+                stringValue = ""
         }
 
         return stringValue
