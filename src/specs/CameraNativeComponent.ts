@@ -12,6 +12,9 @@ type OnReadCodeData = {
     codeStringValue: string;
     codeFormat: string;
 };
+type OnCameraShowData = {
+    isInit: boolean;
+};
 
 type OnOrientationChangeData = {
     orientation: Int32;
@@ -48,7 +51,7 @@ export interface NativeProps extends ViewProps {
   shutterPhotoSound?: boolean;
   onCaptureButtonPressIn?: DirectEventHandler<{}>;
   onCaptureButtonPressOut?: DirectEventHandler<{}>;
-  onCameraShow?: DirectEventHandler<{ isInit: boolean }>;
+  onCameraShow?: DirectEventHandler<OnCameraShowData>;
 
   // not mentioned in props but available on the native side
   shutterAnimationDuration?: Int32;

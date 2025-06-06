@@ -48,7 +48,6 @@ export type CameraApi = {
   capture: () => Promise<CaptureData>;
   requestDeviceCameraAuthorization: () => Promise<boolean>;
   checkDeviceCameraAuthorizationStatus: () => Promise<boolean>;
-  onCameraShow?: (e:NativeEvent<{ isInit: string }>) => void
+  onCameraShow?: (e:NativeEvent<{ isInit: boolean }>) => void
   onReadCode?: (e:NativeEvent<{ codeStringValue: string }>) => void
-
 };

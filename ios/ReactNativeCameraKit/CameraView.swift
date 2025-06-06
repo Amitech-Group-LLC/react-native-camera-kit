@@ -410,12 +410,9 @@ public class CameraView: UIView {
                 stringValue = "upce"
             case .code39:
                 stringValue = "code39"
-//             case .code39Mod43:
-//                 stringValue = "code39Mod43"
+
             case .ean13:
                 stringValue = "ean13"
-            case .ean8:
-                stringValue = "ean8"
             case .ean8:
                 stringValue = "ean8"
             case .code93:
@@ -430,8 +427,6 @@ public class CameraView: UIView {
                 stringValue = "aztec"
             case .dataMatrix:
                 stringValue = "dataMatrix"
-//             case .interleaved2of5:
-//                 stringValue = "interleaved2of5"
             default:
                 stringValue = ""
         }

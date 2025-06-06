@@ -129,6 +129,14 @@ static id CKConvertFollyDynamicToId(const folly::dynamic &dyn)
             std::dynamic_pointer_cast<const facebook::react::CKCameraEventEmitter>(strongSelf->_eventEmitter)->onCaptureButtonPressOut({});
           }
     }];
+    [_view setOnCameraShow:^(NSDictionary* event) {
+        __typeof__(self) strongSelf = weakSelf;
+
+        if (strongSelf != nullptr && strongSelf->_eventEmitter != nullptr) {
+            BOOL isInit = [[event valueForKey:@"isInit"] boolValue];
+            std::dynamic_pointer_cast<const facebook::react::CKCameraEventEmitter>(strongSelf->_eventEmitter)->onCameraShow({.isInit = isInit});
+        }
+    }];
     
     self.contentView = _view;
 }

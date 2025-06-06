@@ -25,7 +25,7 @@ export type OnOrientationChangeData = {
 
 export type OnCameraInitData = {
   nativeEvent: {
-    orientation: Orientation;
+    isInit: boolean;
   };
 };
 
