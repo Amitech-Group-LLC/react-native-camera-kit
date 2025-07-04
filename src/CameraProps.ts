@@ -1,21 +1,31 @@
-import { CameraApi, FlashMode, FocusMode, ZoomMode, TorchMode, CameraType } from './types';
+import { type ViewProps } from 'react-native';
+import {
+  CameraType,
+  type FlashMode,
+  type FocusMode,
+  type ZoomMode,
+  type TorchMode,
+  type ResizeMode,
+  type CodeFormat,
+} from './types';
 import { Orientation } from './index';
 
 export type OnReadCodeData = {
   nativeEvent: {
     codeStringValue: string;
+    codeFormat: CodeFormat;
   };
 };
 
 export type OnOrientationChangeData = {
   nativeEvent: {
-    orientation: Orientation;
+    orientation: typeof Orientation[keyof typeof Orientation];
   };
 };
 
 export type OnCameraInitData = {
   nativeEvent: {
-    orientation: Orientation;
+    isInit: boolean;
   };
 };
 
@@ -25,9 +35,7 @@ export type OnZoom = {
   };
 }
 
-export interface CameraProps {
-  ref?: LegacyRef<Component<CameraApi, {}, any>>;
-  style?: StyleProp<ViewStyle>;
+export interface CameraProps extends ViewProps {
   // Behavior
   flashMode?: FlashMode;
   focusMode?: FocusMode;
@@ -90,24 +98,26 @@ export interface CameraProps {
   onCameraShow?: (event: OnCameraInitData) => void;
   onZoom?: (event: OnZoom) => void;
   /** **Android only**. Triggered when camera fails to initialize */
-  onError?: (event: { nativeEvent: { errorMessage: number } }) => void;
+  onError?: (event: { nativeEvent: { errorMessage: string } }) => void;
   // Barcode only
   scanBarcode?: boolean;
   showFrame?: boolean;
   laserColor?: number | string;
   frameColor?: number | string;
+  barcodeFrameSize?: { width: number; height: number };
   onReadCode?: (event: OnReadCodeData) => void;
   // Specific to iOS
   ratioOverlay?: string;
   ratioOverlayColor?: number | string;
   resetFocusTimeout?: number;
   resetFocusWhenMotionDetected?: boolean;
+  resizeMode?: ResizeMode;
   /** **iOS Only**. Throttle how often the barcode scanner triggers a new scan */
   scanThrottleDelay?: number;
+  /** **iOS Only**. 'speed' provides 60-80% faster image capturing */
+  maxPhotoQualityPrioritization?: 'balanced' | 'quality' | 'speed';
   /** **Android only**. Play a shutter capture sound when capturing a photo */
   shutterPhotoSound?: boolean;
+  onCaptureButtonPressIn?: ({ nativeEvent: {} }) => void;
+  onCaptureButtonPressOut?: ({ nativeEvent: {} }) => void;
 }
-
-declare const Camera: React.FC<CameraProps>;
-
-export default Camera;

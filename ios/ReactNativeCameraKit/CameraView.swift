@@ -5,13 +5,14 @@
 
 import AVFoundation
 import UIKit
+import AVKit
 
 /*
  * View abtracting the logic unrelated to the actual camera
  * Like permission, ratio overlay, focus, zoom gesture, write image, etc
  */
 @objc(CKCameraView)
-class CameraView: UIView {
+public class CameraView: UIView {
     private let camera: CameraProtocol
 
     // Focus
@@ -20,9 +21,10 @@ class CameraView: UIView {
     // scanner
     private var lastBarcodeDetectedTime: TimeInterval = 0
     private var scannerInterfaceView: ScannerInterfaceView
-    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .code39, .code39Mod43, .ean13, .ean8, .code93, .code128, .pdf417, .qr, .aztec, .dataMatrix, .interleaved2of5]
-//    private var supportedBarcodeType: [AVMetadataObject.ObjectType] = [.upce, .ean13, .ean8]
-    
+    private var supportedBarcodeType: [CodeFormat] = {
+        return CodeFormat.allCases
+    }()
+
     // camera
     private var ratioOverlayView: RatioOverlayView?
 
@@ -31,31 +33,40 @@ class CameraView: UIView {
 
     // props
     // camera settings
-    @objc var cameraType: CameraType = .back
-    @objc var flashMode: FlashMode = .auto
-    @objc var torchMode: TorchMode = .off
+    @objc public var cameraType: CameraType = .back
+    @objc public var resizeMode: ResizeMode = .contain
+    @objc public var flashMode: FlashMode = .auto
+    @objc public var torchMode: TorchMode = .off
+    @objc public var maxPhotoQualityPrioritization: MaxPhotoQualityPrioritization = .balanced
     // ratio overlay
-    @objc var ratioOverlay: String?
-    @objc var ratioOverlayColor: UIColor?
+    @objc public var ratioOverlay: String?
+    @objc public var ratioOverlayColor: UIColor?
     // scanner
     @objc var scannerPosition: String?
-    @objc var scanBarcode = false
-    @objc var showFrame = false
-    @objc var initBarCodeTypes: NSArray?
-    @objc var onReadCode: RCTDirectEventBlock?
-    @objc var onCameraShow: RCTDirectEventBlock?
-    @objc var scanThrottleDelay = 2000
-    @objc var frameColor: UIColor?
-    @objc var laserColor: UIColor?
+    @objc public var scanBarcode = false
+    @objc public var showFrame = false
+    @objc public var initBarCodeTypes: NSArray?
+    @objc public var onReadCode: RCTDirectEventBlock?
+    @objc public var onCameraShow: RCTDirectEventBlock?
+    @objc public var scanThrottleDelay = 2000
+    @objc public var frameColor: UIColor?
+    @objc public var laserColor: UIColor?
+    @objc public var barcodeFrameSize: NSDictionary?
+
     // other
-    @objc var onOrientationChange: RCTDirectEventBlock?
-    @objc var onZoom: RCTDirectEventBlock?
-    @objc var resetFocusTimeout = 0
-    @objc var resetFocusWhenMotionDetected = false
-    @objc var focusMode: FocusMode = .on
-    @objc var zoomMode: ZoomMode = .on
-    @objc var zoom: NSNumber?
-    @objc var maxZoom: NSNumber?
+    @objc public var onOrientationChange: RCTDirectEventBlock?
+    @objc public var onZoom: RCTDirectEventBlock?
+    @objc public var resetFocusTimeout = 0
+    @objc public var resetFocusWhenMotionDetected = false
+    @objc public var focusMode: FocusMode = .on
+    @objc public var zoomMode: ZoomMode = .on
+    @objc public var zoom: NSNumber?
+    @objc public var maxZoom: NSNumber?
+
+    @objc public var onCaptureButtonPressIn: RCTDirectEventBlock?
+    @objc public var onCaptureButtonPressOut: RCTDirectEventBlock?
+
+    var eventInteraction: Any? = nil
 
     // MARK: - Setup
 
@@ -71,19 +82,23 @@ class CameraView: UIView {
             setupCamera()
         }
     }
-
     private func setupCamera() {
-        if (hasPropBeenSetup && hasPermissionBeenGranted && !hasCameraBeenSetup) {
+        if hasPropBeenSetup && hasPermissionBeenGranted && !hasCameraBeenSetup {
             hasCameraBeenSetup = true
-            
-            // let isValid = initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: .ean8));
-            
-            let filteredQRTypes = initBarCodeTypes != nil ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }: supportedBarcodeType
-//            let filteredTypes = supportedBarcodeType.filter { type in availableTypes.contains(type) }
-            camera.setup(cameraType: cameraType, supportedBarcodeType: scanBarcode || onReadCode != nil ? filteredQRTypes : [])
 
+            let filteredQRTypes = initBarCodeTypes != nil
+                ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }
+                : supportedBarcodeType
+
+            #if targetEnvironment(macCatalyst)
+            // Force front camera on Mac Catalyst during initial setup
+            camera.setup(cameraType: .front, supportedBarcodeType: scanBarcode || onReadCode != nil ? filteredQRTypes : [])
+            #else
+            camera.setup(cameraType: cameraType, supportedBarcodeType: scanBarcode || onReadCode != nil ? filteredQRTypes : [])
+            #endif
         }
     }
+
 
     // MARK: Lifecycle
 
@@ -119,9 +134,30 @@ class CameraView: UIView {
         focusInterfaceView.delegate = camera
 
         handleCameraPermission()
+
+        configureHardwareInteraction()
     }
 
-    override func removeFromSuperview() {
+    private func configureHardwareInteraction() {
+        #if !targetEnvironment(macCatalyst)
+        // Create a new capture event interaction with a handler that captures a photo.
+        if #available(iOS 17.2, *) {
+            let interaction = AVCaptureEventInteraction { event in
+                // Capture a photo on "press up" of a hardware button.
+                if event.phase == .began {
+                    self.onCaptureButtonPressIn?(nil)
+                } else if event.phase == .ended {
+                    self.onCaptureButtonPressOut?(nil)
+                }
+            }
+            // Add the interaction to the view controller's view.
+            self.addInteraction(interaction)
+            eventInteraction = interaction
+        }
+        #endif
+    }
+
+    override public func removeFromSuperview() {
         camera.cameraRemovedFromSuperview()
 
         super.removeFromSuperview()
@@ -129,9 +165,12 @@ class CameraView: UIView {
 
     // MARK: React lifecycle
 
-    override func reactSetFrame(_ frame: CGRect) {
+    override public func reactSetFrame(_ frame: CGRect) {
         super.reactSetFrame(frame)
+        self.updateSubviewsBounds(frame)
+    }
 
+    @objc public func updateSubviewsBounds(_ frame: CGRect) {
         camera.previewView.frame = bounds
 
         scannerInterfaceView.frame = bounds
@@ -150,20 +189,26 @@ class CameraView: UIView {
 
     }
 
-    override func removeReactSubview(_ subview: UIView) {
+    override public func removeReactSubview(_ subview: UIView) {
         subview.removeFromSuperview()
         super.removeReactSubview(subview)
     }
 
     // Called once when all props have been set, then every time one is updated
-    override func didSetProps(_ changedProps: [String]) {
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    override public func didSetProps(_ changedProps: [String]) {
         hasPropBeenSetup = true
-        
+
         // Camera settings
         if changedProps.contains("cameraType") {
+            #if targetEnvironment(macCatalyst)
+            // Force front camera on Mac Catalyst regardless of what's passed
+            camera.update(cameraType: .front)
+            #else
             camera.update(cameraType: cameraType)
+            #endif
         }
-        
+
         if(changedProps.contains("scannerPosition")) {
             if(showFrame) {
                 updateFrameOffset()
@@ -171,20 +216,27 @@ class CameraView: UIView {
                 self.camera.update(scannerFrameSize: nil)
             }
         }
-        
+
         if changedProps.contains("flashMode") {
             camera.update(flashMode: flashMode)
         }
         if changedProps.contains("cameraType") || changedProps.contains("torchMode") {
             camera.update(torchMode: torchMode)
         }
-        
+        if changedProps.contains("maxPhotoQualityPrioritization") {
+            camera.update(maxPhotoQualityPrioritization: maxPhotoQualityPrioritization)
+        }
+
         if changedProps.contains("onOrientationChange") {
             camera.update(onOrientationChange: onOrientationChange)
         }
-        
+
         if changedProps.contains("onZoom") {
             camera.update(onZoom: onZoom)
+        }
+
+        if changedProps.contains("resizeMode") {
+            camera.update(resizeMode: resizeMode)
         }
 
         // Ratio overlay
@@ -208,11 +260,15 @@ class CameraView: UIView {
 
         // Scanner
         if changedProps.contains("scanBarcode") || changedProps.contains("onReadCode") {
-            let filteredQRTypes = initBarCodeTypes != nil ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }: supportedBarcodeType
-            
+            let filteredQRTypes = initBarCodeTypes != nil
+                ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }
+                : supportedBarcodeType
+
             camera.isBarcodeScannerEnabled(scanBarcode,
-                                           supportedBarcodeType: filteredQRTypes,
-                                           onBarcodeRead: { [weak self] barcode in self?.onBarcodeRead(barcode: barcode) })
+                                           supportedBarcodeTypes: filteredQRTypes,
+                                           onBarcodeRead: { [weak self] (barcode, codeFormat) in
+                                               self?.onBarcodeRead(barcode: barcode, codeFormat: codeFormat)
+                                           })
         }
 
         if changedProps.contains("showFrame") || changedProps.contains("scanBarcode") {
@@ -223,6 +279,13 @@ class CameraView: UIView {
                 } else {
                     self.camera.update(scannerFrameSize: nil)
                 }
+            }
+        }
+
+        if changedProps.contains("barcodeFrameSize"), let barcodeFrameSize, showFrame, scanBarcode {
+            if let width = barcodeFrameSize["width"] as? CGFloat, let height = barcodeFrameSize["height"] as? CGFloat {
+                scannerInterfaceView.update(frameSize: CGSize(width: width, height: height))
+                camera.update(scannerFrameSize: showFrame ? scannerInterfaceView.frameSize : nil)
             }
         }
 
@@ -248,11 +311,11 @@ class CameraView: UIView {
         if changedProps.contains("zoomMode") {
             self.update(zoomMode: zoomMode)
         }
-        
+
         if changedProps.contains("zoom") {
             camera.update(zoom: zoom?.doubleValue)
         }
-        
+
         if changedProps.contains("maxZoom") {
             camera.update(maxZoom: maxZoom?.doubleValue)
         }
@@ -260,9 +323,8 @@ class CameraView: UIView {
 
     // MARK: Public
 
-    func capture(_ options: [String: Any],
-                 onSuccess: @escaping (_ imageObject: [String: Any]) -> (),
-                 onError: @escaping (_ error: String) -> ()) {
+    @objc public func capture(onSuccess: @escaping (_ imageObject: [String: Any]) -> Void,
+                 onError: @escaping (_ error: String) -> Void) {
         camera.capturePicture(onWillCapture: { [weak self] in
             // Flash/dim preview to indicate shutter action
             DispatchQueue.main.async {
@@ -271,20 +333,24 @@ class CameraView: UIView {
                     self?.camera.previewView.alpha = 1
                 })
             }
-        }, onSuccess: { [weak self] imageData, thumbnailData in
+        }, onSuccess: { [weak self] imageData, thumbnailData, dimensions in
             DispatchQueue.global(qos: .default).async {
-                self?.writeCaptured(imageData: imageData, thumbnailData: thumbnailData, onSuccess: onSuccess, onError: onError)
+                self?.writeCaptured(imageData: imageData,
+                                    thumbnailData: thumbnailData,
+                                    dimensions: dimensions,
+                                    onSuccess: onSuccess,
+                                    onError: onError)
 
                 self?.focusInterfaceView.resetFocus()
             }
         }, onError: onError)
     }
-    
+
     // MARK: - Private Helper
 
     private func update(zoomMode: ZoomMode) {
         if zoomMode == .on {
-            if (zoomGestureRecognizer == nil) {
+            if zoomGestureRecognizer == nil {
                 let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchToZoomRecognizer(_:)))
                 addGestureRecognizer(pinchGesture)
                 zoomGestureRecognizer = pinchGesture
@@ -296,13 +362,32 @@ class CameraView: UIView {
             }
         }
     }
-    
+
     private func handleCameraPermission() {
+        #if targetEnvironment(macCatalyst)
+        // On macOS, camera permissions are handled differently
+        if #available(macCatalyst 14.0, *) {
+            switch AVCaptureDevice.authorizationStatus(for: .video) {
+            case .authorized:
+                hasPermissionBeenGranted = true
+            case .notDetermined:
+                AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                    if granted {
+                        DispatchQueue.main.async {
+                            self?.hasPermissionBeenGranted = true
+                        }
+                    }
+                }
+            default:
+                break
+            }
+        }
+        #else
+        // iOS permission handling
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             // The user has previously granted access to the camera.
             hasPermissionBeenGranted = true
-            break
         case .notDetermined:
             // The user has not yet been presented with the option to grant video access.
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
@@ -314,9 +399,10 @@ class CameraView: UIView {
             // The user has previously denied access.
             break
         }
+        #endif
     }
-    
-    private func convertBarCodeEnumToString(barcodeType: AVMetadataObject.ObjectType) -> String {
+
+    private func convertBarCodeEnumToString(barcodeType: CodeFormat) -> String {
         var stringValue: String = "";
 
         switch(barcodeType) {
@@ -324,12 +410,9 @@ class CameraView: UIView {
                 stringValue = "upce"
             case .code39:
                 stringValue = "code39"
-            case .code39Mod43:
-                stringValue = "code39Mod43"
+
             case .ean13:
                 stringValue = "ean13"
-            case .ean8:
-                stringValue = "ean8"
             case .ean8:
                 stringValue = "ean8"
             case .code93:
@@ -344,27 +427,28 @@ class CameraView: UIView {
                 stringValue = "aztec"
             case .dataMatrix:
                 stringValue = "dataMatrix"
-            case .interleaved2of5:
-                stringValue = "interleaved2of5"
-        default:
-            stringValue = ""
+            default:
+                stringValue = ""
         }
-        
+
         return stringValue
-        
+
     }
     private func writeCaptured(imageData: Data,
                                thumbnailData: Data?,
-                               onSuccess: @escaping (_ imageObject: [String: Any]) -> (),
-                               onError: @escaping (_ error: String) -> ()) {
+                               dimensions: CMVideoDimensions,
+                               onSuccess: @escaping (_ imageObject: [String: Any]) -> Void,
+                               onError: @escaping (_ error: String) -> Void) {
         do {
             let temporaryImageFileURL = try saveToTmpFolder(imageData)
-            
+
             onSuccess([
                 "size": imageData.count,
                 "uri": temporaryImageFileURL.description,
                 "name": temporaryImageFileURL.lastPathComponent,
-                "thumb": ""
+                "thumb": "",
+                "height": dimensions.height,
+                "width": dimensions.width
             ])
         } catch {
             let errorMessage = "Error occurred while writing image data to a temporary file: \(error)"
@@ -390,7 +474,7 @@ class CameraView: UIView {
         return temporaryFileURL
     }
 
-    private func onBarcodeRead(barcode: String) {
+    private func onBarcodeRead(barcode: String, codeFormat:CodeFormat) {
         // Throttle barcode detection
         let now = Date.timeIntervalSinceReferenceDate
         guard lastBarcodeDetectedTime + Double(scanThrottleDelay) / 1000 < now else {
@@ -399,9 +483,9 @@ class CameraView: UIView {
 
         lastBarcodeDetectedTime = now
 
-        onReadCode?(["codeStringValue": barcode])
+        onReadCode?(["codeStringValue": barcode,"codeFormat":codeFormat.rawValue])
     }
-    
+
     private func updateFrameOffset() {
         if self.scannerPosition == "center" && self.showFrame {
             let centerFrame = self.scannerInterfaceView.frameSize
@@ -415,7 +499,7 @@ class CameraView: UIView {
             camera.update(scannerFrameSize: topFrame);
         }
     }
-        
+
     private func onInitCamera() {
         onCameraShow?(["isInit": true])
     }

@@ -94,16 +94,17 @@ const BarcodeExample = ({ onBack }: { onBack: () => void }) => {
       <SafeAreaView style={styles.topButtons}>
         {flashData.image && (
           <TouchableOpacity style={styles.topButton} onPress={onSetFlash}>
-            <Image source={flashData.image} resizeMode="contain" />
+            <Image style={styles.topButtonImg} source={flashData.image} resizeMode="contain" />
           </TouchableOpacity>
         )}
 
         <TouchableOpacity style={styles.topButton} onPress={onSwitchCameraPressed}>
-          <Image source={require('../images/cameraFlipIcon.png')} resizeMode="contain" />
+          <Image style={styles.topButtonImg} source={require('../images/cameraFlipIcon.png')} resizeMode="contain" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.topButton} onPress={onSetTorch}>
           <Image
+            style={styles.topButtonImg}
             source={torchMode ? require('../images/torchOn.png') : require('../images/torchOff.png')}
             resizeMode="contain"
           />
@@ -146,10 +147,13 @@ const BarcodeExample = ({ onBack }: { onBack: () => void }) => {
           frameColor="white"
           scanBarcode
           showFrame
+          barcodeFrameSize={{ width: 300, height: 150 }}
           onReadCode={(event) => {
             Vibration.vibrate(100);
             setBarcode(event.nativeEvent.codeStringValue);
             console.log('barcode', event.nativeEvent.codeStringValue);
+            console.log('codeFormat', event.nativeEvent.codeFormat);
+
           }}
         />
       </View>
@@ -199,7 +203,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   topButton: {
-    padding: 10,
+    backgroundColor: '#222',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topButtonImg: {
+    margin: 10,
+    width: 24,
+    height: 24,
   },
 
   cameraContainer: {
