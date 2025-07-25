@@ -546,7 +546,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         val event: WritableMap = Arguments.createMap()
         currentContext.getJSModule(RCTEventEmitter::class.java).receiveEvent(
                 id,
-                "onOrientationChange",
+                "topOrientationChange",
                 event
         )
     }
