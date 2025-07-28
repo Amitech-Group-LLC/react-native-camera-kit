@@ -381,6 +381,8 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
             // Attach the viewfinder's surface provider to preview use case
             preview?.setSurfaceProvider(viewFinder.surfaceProvider)
+
+            onCameraShow(true)
         } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc)
 
@@ -539,6 +541,12 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         UIManagerHelper
             .getEventDispatcherForReactTag(currentContext, id)
             ?.dispatchEvent(OrientationChangeEvent(surfaceId, id, remappedOrientation))
+
+        private fun onCameraShow(isInit: Boolean) {
+            val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
+            UIManagerHelper
+                .getEventDispatcherForReactTag(currentContext, id)
+                ?.dispatchEvent(OnCameraShowEvent(surfaceId, id, isInit))
     }
 
     private fun onPictureTaken(uri: String) {
