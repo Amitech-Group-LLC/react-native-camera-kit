@@ -541,8 +541,9 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         UIManagerHelper
             .getEventDispatcherForReactTag(currentContext, id)
             ?.dispatchEvent(OrientationChangeEvent(surfaceId, id, remappedOrientation))
+    }
 
-        private fun onCameraShow(isInit: Boolean) {
+    private fun onCameraShow(isInit: Boolean) {
             val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
             UIManagerHelper
                 .getEventDispatcherForReactTag(currentContext, id)
