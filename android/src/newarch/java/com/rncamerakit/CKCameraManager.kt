@@ -53,16 +53,16 @@ class CKCameraManager(context: ReactApplicationContext) : SimpleViewManager<CKCa
     }
 
     override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
-        return MapBuilder.builder<String, Any>()
-            .put(OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"))
-            .put(ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"))
-            .put(OnCameraShowEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCameraShow"))
-            .put(PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"))
-            .put(ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"))
-            .put(ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"))
-            .put(CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"))
-            .put(CaptureButtonPressOutEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressOut"))
-            .build()
+        return MapBuilder.of(
+            OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"),
+            ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"),
+            OnCameraShowEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCameraShow"),
+            PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"),
+            ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"),
+            ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"),
+            CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"),
+            CaptureButtonPressOutEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressOut")
+        )
     }
 
     @ReactProp(name = "cameraType")

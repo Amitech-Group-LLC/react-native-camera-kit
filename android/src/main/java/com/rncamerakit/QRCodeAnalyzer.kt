@@ -47,8 +47,8 @@ val typesMap = mapOf(
 
 class QRCodeAnalyzer (
     private val onQRCodesDetected: (qrCodes: List<Barcode>, imageSize: Size) -> Unit,
-    private val scanThrottleDelay: Long = 0L
-    val qrTypes: Array<String>?
+    private val scanThrottleDelay: Long = 0L,
+    private val qrTypes: Array<String>? = null
 ) : ImageAnalysis.Analyzer {
     // Time in milliseconds of the last time we dispatched detected barcodes
     private var lastBarcodeDetectedTime: Long = 0L
@@ -59,12 +59,8 @@ class QRCodeAnalyzer (
 
         val inputImage = InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees)
 
-        var barcodeFormats: List<Int?>
-        if(qrTypes != null){
-            barcodeFormats = qrTypes.map { typesMap[it] }
-        } else {
-            barcodeFormats = initBarcodeTypes
-        }
+        val barcodeFormats = qrTypes?.map { typesMap[it] } ?: initBarcodeTypes
+
         val nonNullableQRList: List<Int> = barcodeFormats.filterNotNull()
 
         val remainQRCodes = nonNullableQRList.drop(1).toIntArray()

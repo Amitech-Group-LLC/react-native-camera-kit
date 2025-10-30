@@ -360,7 +360,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
                 if (filteredBarcodes.isNotEmpty()) {
                     onBarcodeRead(filteredBarcodes)
                 }
-            }, scanThrottleDelay)
+            }, scanThrottleDelay, qrTypes)
             imageAnalyzer!!.setAnalyzer(cameraExecutor, analyzer)
             useCases.add(imageAnalyzer)
         }
