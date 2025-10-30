@@ -106,9 +106,9 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
     // Barcode Props
     private var scanBarcode: Boolean = false
+    private var scanThrottleDelay: Long = 2000L
     private var frameColor = Color.GREEN
     private var laserColor = Color.RED
-    private var scanThrottleDelay: Int = 20000
     private var barcodeFrameSize: Size? = null
 
     private fun getActivity() : Activity {
@@ -134,10 +134,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (hasPermissions()) {
-            viewFinder.post {
-                setupCamera()
-            }
-
+            viewFinder.post { setupCamera() }
         }
     }
 
@@ -275,7 +272,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         val minZoomFactor = videoDevice?.cameraInfo?.zoomState?.value?.minZoomRatio?.toDouble()
         var maxZoomFactor: Double? = videoDevice?.cameraInfo?.zoomState?.value?.maxZoomRatio?.toDouble()
         val maxZoom = this.maxZoom
-        if (maxZoom != null) {
+        if (maxZoom != null && maxZoom > -1) {
             maxZoomFactor = min(maxZoomFactor ?: maxZoom, maxZoom)
         }
         if (maxZoomFactor != null) {
@@ -333,16 +330,16 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
         val useCases = mutableListOf(preview, imageCapture)
 
-        if (scanBarcode) {
-            val analyzer = QRCodeAnalyzer ({ barcodes, imageSize ->
+    if (scanBarcode) {
+        val analyzer = QRCodeAnalyzer(analyzerBlock@{ barcodes, imageSize ->
                 if (barcodes.isEmpty()) {
-                    return@QRCodeAnalyzer
+                    return@analyzerBlock
                 }
 
-                val barcodeFrame = barcodeFrame;
+                val barcodeFrame = barcodeFrame
                 if (barcodeFrame == null) {
                     onBarcodeRead(barcodes)
-                    return@QRCodeAnalyzer
+                    return@analyzerBlock
                 }
 
                 // Calculate scaling factors (image is always rotated by 90 degrees)
@@ -363,7 +360,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
                 if (filteredBarcodes.isNotEmpty()) {
                     onBarcodeRead(filteredBarcodes)
                 }
-            }, qrTypes)
+            }, scanThrottleDelay)
             imageAnalyzer!!.setAnalyzer(cameraExecutor, analyzer)
             useCases.add(imageAnalyzer)
         }
@@ -485,6 +482,10 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
                     imageInfo.putInt("width", width)
                     imageInfo.putInt("height", height)
                     imageInfo.putString("path", path)
+
+                    val imageFile = File(path)
+                    val imageSize = imageFile.length() // size in bytes
+                    imageInfo.putDouble("size", imageSize.toDouble())
 
                     promise.resolve(imageInfo)
                 } catch (ex: Exception) {
@@ -659,8 +660,11 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         if (restartCamera) bindCameraUseCases()
     }
 
-    fun setScanThrottleDelay(delay: Int) {
-        scanThrottleDelay = delay
+    fun setScanThrottleDelay(delayMs: Int) {
+        val newDelay = if (delayMs < 0) 2000L else delayMs.toLong()
+        val restartCamera = scanThrottleDelay != newDelay && scanBarcode
+        scanThrottleDelay = newDelay
+        if (restartCamera) bindCameraUseCases()
     }
 
     fun setCameraType(type: String = "back") {

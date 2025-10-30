@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.util.Log
 import android.util.Size
 import androidx.annotation.ColorInt
+import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
@@ -15,10 +16,10 @@ import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.CKCameraManagerDelegate
 import com.facebook.react.viewmanagers.CKCameraManagerInterface
+
 import com.rncamerakit.events.*
 
-class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<CKCamera> {
-
+class CKCameraManager(context: ReactApplicationContext) : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<CKCamera> {
     private val delegate: ViewManagerDelegate<CKCamera> = CKCameraManagerDelegate(this)
 
     override fun getDelegate(): ViewManagerDelegate<CKCamera> = delegate
@@ -163,6 +164,11 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     @ReactProp(name = "shutterPhotoSound")
     override fun setShutterPhotoSound(view: CKCamera, enabled: Boolean) {
         view.setShutterPhotoSound(enabled);
+    }
+
+    @ReactProp(name = "scanThrottleDelay")
+    override fun setScanThrottleDelay(view: CKCamera?, value: Int) {
+        view?.setScanThrottleDelay(value)
     }
 
     // Methods only available on iOS
