@@ -15,7 +15,6 @@
 
 @interface RCT_EXTERN_MODULE(CKCameraManager, RCTViewManager)
 
-RCT_EXPORT_VIEW_PROPERTY(initBarCodeTypes, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(cameraType, CKCameraType)
 RCT_EXPORT_VIEW_PROPERTY(flashMode, CKFlashMode)
 RCT_EXPORT_VIEW_PROPERTY(maxPhotoQualityPrioritization, CKMaxPhotoQualityPrioritization)
@@ -32,7 +31,7 @@ RCT_EXPORT_VIEW_PROPERTY(scanThrottleDelay, NSInteger)
 RCT_EXPORT_VIEW_PROPERTY(laserColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(frameColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(barcodeFrameSize, NSDictionary)
-RCT_EXPORT_VIEW_PROPERTY(scannerPosition, NSString)
+RCT_EXPORT_VIEW_PROPERTY(allowedBarcodeTypes, NSArray)
 
 RCT_EXPORT_VIEW_PROPERTY(onOrientationChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCaptureButtonPressIn, RCTDirectEventBlock)

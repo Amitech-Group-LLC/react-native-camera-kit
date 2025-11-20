@@ -58,6 +58,7 @@ export interface NativeProps extends ViewProps {
   onCaptureButtonPressIn?: DirectEventHandler<{}>;
   onCaptureButtonPressOut?: DirectEventHandler<{}>;
   onCameraShow?: DirectEventHandler<OnCameraShowData>;
+  allowedBarcodeTypes?: string[];
 
   // not mentioned in props but available on the native side
   shutterAnimationDuration?: WithDefault<Int32, -1>;
