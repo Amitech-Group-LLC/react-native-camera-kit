@@ -242,3 +242,9 @@ dist/
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcworkspace/contents.xcworkspacedata
+
+### RN Codegen bug
+# There's no such thing as podspecs for Android, so ignore the generated file
+android/generated/ReactCodegen.podspec
+
+example/.rock/cache/
