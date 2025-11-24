@@ -6,6 +6,7 @@
 import AVFoundation
 import UIKit
 import AVKit
+import React
 
 /*
  * View abtracting the logic unrelated to the actual camera
@@ -21,9 +22,6 @@ public class CameraView: UIView {
     // scanner
     private var lastBarcodeDetectedTime: TimeInterval = 0
     private var scannerInterfaceView: ScannerInterfaceView
-    private var supportedBarcodeType: [CodeFormat] = {
-        return CodeFormat.allCases
-    }()
 
     // camera
     private var ratioOverlayView: RatioOverlayView?
@@ -42,16 +40,15 @@ public class CameraView: UIView {
     @objc public var ratioOverlay: String?
     @objc public var ratioOverlayColor: UIColor?
     // scanner
-    @objc var scannerPosition: String?
     @objc public var scanBarcode = false
     @objc public var showFrame = false
-    @objc public var initBarCodeTypes: NSArray?
     @objc public var onReadCode: RCTDirectEventBlock?
     @objc public var onCameraShow: RCTDirectEventBlock?
     @objc public var scanThrottleDelay = 2000
     @objc public var frameColor: UIColor?
     @objc public var laserColor: UIColor?
     @objc public var barcodeFrameSize: NSDictionary?
+    @objc public var allowedBarcodeTypes: NSArray?
 
     // other
     @objc public var onOrientationChange: RCTDirectEventBlock?
@@ -84,21 +81,29 @@ public class CameraView: UIView {
     }
     private func setupCamera() {
         if hasPropBeenSetup && hasPermissionBeenGranted && !hasCameraBeenSetup {
+            let convertedAllowedTypes = convertAllowedBarcodeTypes()
+
             hasCameraBeenSetup = true
-
-            let filteredQRTypes = initBarCodeTypes != nil
-                ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }
-                : supportedBarcodeType
-
             #if targetEnvironment(macCatalyst)
             // Force front camera on Mac Catalyst during initial setup
-            camera.setup(cameraType: .front, supportedBarcodeType: scanBarcode || onReadCode != nil ? filteredQRTypes : [])
+            camera.setup(cameraType: .front, supportedBarcodeType: scanBarcode && onReadCode != nil ? convertedAllowedTypes : [])
             #else
-            camera.setup(cameraType: cameraType, supportedBarcodeType: scanBarcode || onReadCode != nil ? filteredQRTypes : [])
+            camera.setup(cameraType: cameraType, supportedBarcodeType: scanBarcode && onReadCode != nil ? convertedAllowedTypes : [])
             #endif
         }
     }
 
+    // Use constraints for FABRIC 0.80.0
+    private func addFullSizeSubview(_ subview: UIView) {
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(subview)
+        NSLayoutConstraint.activate([
+            subview.topAnchor.constraint(equalTo: self.topAnchor),
+            subview.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            subview.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            subview.trailingAnchor.constraint(equalTo: self.trailingAnchor)
+        ])
+    }
 
     // MARK: Lifecycle
 
@@ -131,6 +136,11 @@ public class CameraView: UIView {
         scannerInterfaceView.isHidden = true
 
         addSubview(focusInterfaceView)
+
+        addFullSizeSubview(camera.previewView)
+        addFullSizeSubview(scannerInterfaceView)
+        addFullSizeSubview(focusInterfaceView)
+
         focusInterfaceView.delegate = camera
 
         handleCameraPermission()
@@ -142,12 +152,12 @@ public class CameraView: UIView {
         #if !targetEnvironment(macCatalyst)
         // Create a new capture event interaction with a handler that captures a photo.
         if #available(iOS 17.2, *) {
-            let interaction = AVCaptureEventInteraction { event in
+            let interaction = AVCaptureEventInteraction { [weak self] event in
                 // Capture a photo on "press up" of a hardware button.
                 if event.phase == .began {
-                    self.onCaptureButtonPressIn?(nil)
+                    self?.onCaptureButtonPressIn?(nil)
                 } else if event.phase == .ended {
-                    self.onCaptureButtonPressOut?(nil)
+                    self?.onCaptureButtonPressOut?(nil)
                 }
             }
             // Add the interaction to the view controller's view.
@@ -175,11 +185,7 @@ public class CameraView: UIView {
 
         scannerInterfaceView.frame = bounds
         // If frame size changes, we have to update the scanner
-        if(showFrame) {
-            updateFrameOffset()
-        } else {
-            camera.update(scannerFrameSize: nil)
-        }
+        camera.update(scannerFrameSize: showFrame ? scannerInterfaceView.frameSize : nil)
 
         focusInterfaceView.frame = bounds
 
@@ -208,15 +214,6 @@ public class CameraView: UIView {
             camera.update(cameraType: cameraType)
             #endif
         }
-
-        if(changedProps.contains("scannerPosition")) {
-            if(showFrame) {
-                updateFrameOffset()
-            } else {
-                self.camera.update(scannerFrameSize: nil)
-            }
-        }
-
         if changedProps.contains("flashMode") {
             camera.update(flashMode: flashMode)
         }
@@ -259,26 +256,21 @@ public class CameraView: UIView {
         }
 
         // Scanner
-        if changedProps.contains("scanBarcode") || changedProps.contains("onReadCode") {
-            let filteredQRTypes = initBarCodeTypes != nil
-                ? supportedBarcodeType.filter { type in initBarCodeTypes!.contains(convertBarCodeEnumToString(barcodeType: type)) }
-                : supportedBarcodeType
+        if changedProps.contains("scanBarcode") || changedProps.contains("onReadCode") || changedProps.contains("allowedBarcodeTypes") {
+            let convertedAllowedTypes: [CodeFormat] = convertAllowedBarcodeTypes()
 
             camera.isBarcodeScannerEnabled(scanBarcode,
-                                           supportedBarcodeTypes: filteredQRTypes,
-                                           onBarcodeRead: { [weak self] (barcode, codeFormat) in
-                                               self?.onBarcodeRead(barcode: barcode, codeFormat: codeFormat)
-                                           })
+                supportedBarcodeTypes: convertedAllowedTypes,
+                onBarcodeRead: { [weak self] (barcode, codeFormat) in
+                    self?.onBarcodeRead(barcode: barcode, codeFormat: codeFormat)
+                })
         }
 
         if changedProps.contains("showFrame") || changedProps.contains("scanBarcode") {
             DispatchQueue.main.async {
                 self.scannerInterfaceView.isHidden = !self.showFrame
-                if(self.showFrame) {
-                    self.updateFrameOffset();
-                } else {
-                    self.camera.update(scannerFrameSize: nil)
-                }
+
+                self.camera.update(scannerFrameSize: self.showFrame ? self.scannerInterfaceView.frameSize : nil)
             }
         }
 
@@ -486,18 +478,12 @@ public class CameraView: UIView {
         onReadCode?(["codeStringValue": barcode,"codeFormat":codeFormat.rawValue])
     }
 
-    private func updateFrameOffset() {
-        if self.scannerPosition == "center" && self.showFrame {
-            let centerFrame = self.scannerInterfaceView.frameSize
-            print("center")
-            camera.update(scannerFrameSize: centerFrame);
-        } else if self.scannerPosition == "top" && self.showFrame {
-            let centerFrame = self.scannerInterfaceView.frameSize
-            print("top", centerFrame)
-            let topFrame = CGRect(x: centerFrame.origin.x, y: centerFrame.origin.y / 2, width: centerFrame.size.width, height: centerFrame.size.height)
-            print("after top: ", topFrame)
-            camera.update(scannerFrameSize: topFrame);
+    private func convertAllowedBarcodeTypes() -> [CodeFormat] {
+        guard let allowedTypes = allowedBarcodeTypes as? [String], !allowedTypes.isEmpty else {
+            return CodeFormat.allCases
         }
+
+        return allowedTypes.compactMap { CodeFormat(rawValue: $0) }
     }
 
     private func onInitCamera() {

@@ -40,10 +40,14 @@ export interface CameraProps extends ViewProps {
   flashMode?: FlashMode;
   focusMode?: FocusMode;
   /**
-   * Enable or disable the pinch gesture handler
-   * Example:
+   * Enable or disable the pinch gesture handler.
+   * If `zoomMode` is `on`, you must pass `zoom` as `undefined`, or
+   * avoid setting `zoom` it to allow pinch to zoom.
+   * Examples:
    * ```
    * <Camera zoomMode="on" />
+   * <Camera zoomMode="on" zoom={undefined} />
+   * <Camera zoomMode="off" zoom={1.0} />
    * ```
    */
   zoomMode?: ZoomMode;
@@ -112,7 +116,7 @@ export interface CameraProps extends ViewProps {
   resetFocusTimeout?: number;
   resetFocusWhenMotionDetected?: boolean;
   resizeMode?: ResizeMode;
-  /** **iOS Only**. Throttle how often the barcode scanner triggers a new scan */
+  /** Throttle how often the barcode scanner triggers a new scan */
   scanThrottleDelay?: number;
   /** **iOS Only**. 'speed' provides 60-80% faster image capturing */
   maxPhotoQualityPrioritization?: 'balanced' | 'quality' | 'speed';
@@ -120,4 +124,5 @@ export interface CameraProps extends ViewProps {
   shutterPhotoSound?: boolean;
   onCaptureButtonPressIn?: ({ nativeEvent: {} }) => void;
   onCaptureButtonPressOut?: ({ nativeEvent: {} }) => void;
+  allowedBarcodeTypes?: CodeFormat[];
 }

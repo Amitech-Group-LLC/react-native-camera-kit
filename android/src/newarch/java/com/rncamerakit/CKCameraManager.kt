@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.util.Log
 import android.util.Size
 import androidx.annotation.ColorInt
+import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
@@ -15,10 +16,10 @@ import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.CKCameraManagerDelegate
 import com.facebook.react.viewmanagers.CKCameraManagerInterface
+
 import com.rncamerakit.events.*
 
-class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<CKCamera> {
-
+class CKCameraManager(context: ReactApplicationContext) : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<CKCamera> {
     private val delegate: ViewManagerDelegate<CKCamera> = CKCameraManagerDelegate(this)
 
     override fun getDelegate(): ViewManagerDelegate<CKCamera> = delegate
@@ -52,37 +53,20 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     }
 
     override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
-        return MapBuilder.builder<String, Any>()
-            .put(OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"))
-            .put(ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"))
-            .put(OnCameraShowEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCameraShow"))
-            .put(PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"))
-            .put(ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"))
-            .put(ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"))
-            .put(CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"))
-            .put(CaptureButtonPressOutEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressOut"))
-            .build()
+        return MapBuilder.of(
+            OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"),
+            ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"),
+            PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"),
+            ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"),
+            ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"),
+            CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"),
+            CaptureButtonPressOutEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressOut")
+        )
     }
 
     @ReactProp(name = "cameraType")
     override fun setCameraType(view: CKCamera, type: String?) {
         view.setCameraType(type ?: "back")
-    }
-
-    @ReactProp(name = "initBarCodeTypes")
-    fun setInitBarCodeTypes(view: CKCamera, types: ReadableArray?) {
-
-        val barCodeTypes = ArrayList<String>()
-        if(types != null && types.size() > 0){
-            for (i in 0 until types.size()) {
-                val type = types.getString(i)
-                type?.let {
-                    barCodeTypes.add(it)
-                }
-            }
-        }
-
-        view.setInitBarCodeTypes(barCodeTypes.toTypedArray())
     }
 
     @ReactProp(name = "flashMode")
@@ -113,11 +97,6 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     @ReactProp(name = "maxZoom", defaultDouble = 420.0)
     override fun setMaxZoom(view: CKCamera, factor: Double) {
         view.setMaxZoom(factor)
-    }
-
-    @ReactProp(name = "scanThrottleDelay", defaultInt = 2000)
-    override fun setScanThrottleDelay(view: CKCamera, factor: Int) {
-        view.setScanThrottleDelay(factor)
     }
 
     @ReactProp(name = "scanBarcode")
@@ -163,6 +142,16 @@ class CKCameraManager : SimpleViewManager<CKCamera>(), CKCameraManagerInterface<
     @ReactProp(name = "shutterPhotoSound")
     override fun setShutterPhotoSound(view: CKCamera, enabled: Boolean) {
         view.setShutterPhotoSound(enabled);
+    }
+
+    @ReactProp(name = "allowedBarcodeTypes")
+    override fun setAllowedBarcodeTypes(view: CKCamera, types: ReadableArray?) {
+        view.setAllowedBarcodeTypes(types)
+    }
+
+    @ReactProp(name = "scanThrottleDelay")
+    override fun setScanThrottleDelay(view: CKCamera?, value: Int) {
+        view?.setScanThrottleDelay(value)
     }
 
     // Methods only available on iOS
