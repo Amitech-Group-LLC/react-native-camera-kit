@@ -1,10 +1,9 @@
 import type React from 'react';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, SafeAreaView, Animated, StatusBar, ScrollView } from 'react-native';
+import { useRef, useState } from 'react';
+import { Animated, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Camera from '../../src/Camera';
-import { type CameraApi, CameraType, type CaptureData } from '../../src/types';
+import { type CameraApi, CameraType, type CaptureData } from '../../src';
 import { Orientation } from '../../src';
-import type { CameraProps } from '../../src/CameraProps';
 
 const flashImages = {
   on: require('../images/flashOn.png'),
@@ -354,7 +353,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   backTextStyle: {
-    padding: 10,
+    padding: 12,
     color: 'white',
     fontSize: 20,
   },
