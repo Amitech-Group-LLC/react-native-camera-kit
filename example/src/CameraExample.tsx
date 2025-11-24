@@ -2,7 +2,7 @@ import type React from 'react';
 import { useState, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Animated, ScrollView } from 'react-native';
 import Camera from '../../src/Camera';
-import { type CameraApi, CameraType, type CaptureData } from '../../src/types';
+import { type CameraApi, CameraType, type CaptureData } from '../../src';
 import { Orientation } from '../../src';
 import SafeAreaView from './SafeAreaView';
 

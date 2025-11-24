@@ -113,11 +113,11 @@ public class CameraView: UIView {
     }
 
     override init(frame: CGRect) {
-        #if targetEnvironment(simulator)
+#if targetEnvironment(simulator)
         camera = SimulatorCamera()
-        #else
+#else
         camera = RealCamera()
-        #endif
+#endif
 
         scannerInterfaceView = ScannerInterfaceView(frameColor: .white, laserColor: .red)
         focusInterfaceView = FocusInterfaceView()
