@@ -773,6 +773,12 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
         return allowedBarcodeTypes?.map { it.code }?.toSet() ?: emptySet()
     }
 
+    private fun codeFormatFromName(name: String): CodeFormat? {
+        return CodeFormat.values().firstOrNull {
+            it.name.equals(name, ignoreCase = true)
+        }
+    }
+
     companion object {
 
         private const val TAG = "CameraKit"
