@@ -529,7 +529,14 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun onBarcodeRead(barcodes: List<Barcode>) {
-        val codeFormat = CodeFormat.fromBarcodeType(barcodes.first().format);
+        if (barcodes.isEmpty()) return
+
+        val firstBarcode = barcodes.first()
+        val codeFormat = CodeFormat.fromBarcodeType(firstBarcode.format)
+
+        // Skip unknown barcode types
+        if (codeFormat == CodeFormat.UNKNOWN) return
+
         val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
         UIManagerHelper
             .getEventDispatcherForReactTag(currentContext, id)
@@ -770,8 +777,21 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun convertAllowedBarcodeTypes(): Set<Int> {
-        return allowedBarcodeTypes?.map { it.code }?.toSet() ?: emptySet()
+        // If null or empty, return all barcode types
+        if (allowedBarcodeTypes.isNullOrEmpty()) {
+            return CodeFormat.values()
+                .map { it.toBarcodeType() }
+                .filter { it != -1 } // skip UNKNOWN
+                .toSet()
+        }
+
+        // Otherwise, map only the allowed types
+        return allowedBarcodeTypes!!
+            .map { it.toBarcodeType() }
+            .filter { it != -1 } // skip UNKNOWN
+            .toSet()
     }
+
 
     private fun codeFormatFromName(name: String): CodeFormat? {
         return CodeFormat.values().firstOrNull {
