@@ -371,10 +371,10 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
                         (barcodeBoundingBox.bottom * scaleY).toInt()
                     )
                     frameRect.contains(scaledBarcodeBoundingBox)
-                    // 5. Emit if any left
-                    if (filteredBarcodes.isNotEmpty()) {
-                        onBarcodeRead(filteredBarcodes)
-                    }
+                }
+                // 5. Emit if any left
+                if (filteredBarcodes.isNotEmpty()) {
+                    onBarcodeRead(filteredBarcodes)
                 }
             }, scanThrottleDelay)
             imageAnalyzer!!.setAnalyzer(cameraExecutor, analyzer)
@@ -740,7 +740,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
         for (i in 0 until types.size()) {
             val name = types.getString(i) ?: continue
-            val format = CodeFormat.fromName(name)
+            val format = codeFormatFromName(name)
             if (format != null) {
                 converted.add(format)
             }
@@ -770,7 +770,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun convertAllowedBarcodeTypes(): Set<Int> {
-        return allowedBarcodeTypes?.map { it.barcodeType }?.toSet() ?: emptySet()
+        return allowedBarcodeTypes?.map { it.code }?.toSet() ?: emptySet()
     }
 
     companion object {
