@@ -51,6 +51,7 @@ class CKCameraManager(var context: ReactApplicationContext) : SimpleViewManager<
             OrientationChangeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onOrientationChange"),
             ReadCodeEvent.EVENT_NAME, MapBuilder.of("registrationName", "onReadCode"),
             PictureTakenEvent.EVENT_NAME, MapBuilder.of("registrationName", "onPictureTaken"),
+            OnCameraShowEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCameraShow"),
             ZoomEvent.EVENT_NAME, MapBuilder.of("registrationName", "onZoom"),
             ErrorEvent.EVENT_NAME, MapBuilder.of("registrationName", "onError"),
             CaptureButtonPressInEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCaptureButtonPressIn"),
