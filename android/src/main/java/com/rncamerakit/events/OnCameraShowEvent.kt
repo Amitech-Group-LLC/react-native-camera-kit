@@ -17,6 +17,6 @@ class OnCameraShowEvent(
         }
 
     companion object {
-        const val EVENT_NAME = "onCameraShow"
+        const val EVENT_NAME = "topOnCameraShow"
     }
 }
