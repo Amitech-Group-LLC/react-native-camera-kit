@@ -29,9 +29,13 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.facebook.react.uimanager.UIManagerHelper
 import com.rncamerakit.barcode.BarcodeFrame
+import com.rncamerakit.BuildConfig
 import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -562,20 +566,23 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun onCameraShow(isInit: Boolean) {
-        Log.e(TAG, "IS_NEW_ARCHITECTURE_ENABLED: $BuildConfig.IS_NEW_ARCHITECTURE_ENABLED")
+        Log.e(TAG, "IS_NEW_ARCHITECTURE_ENABLED: ${BuildConfig.IS_NEW_ARCHITECTURE_ENABLED}")
+
+        val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-            val surfaceId = UIManagerHelper.getSurfaceId(context)
+            val reactContext = currentContext as ReactContext
             UIManagerHelper
-                .getEventDispatcherForReactTag(context, id)
+                .getEventDispatcherForReactTag(reactContext, id)
                 ?.dispatchEvent(
-                    com.rncamerakit.events.OnCameraShowEvent(
+                    OnCameraShowEvent(
                         surfaceId,
                         id,
                         isInit
                     )
                 )
         } else {
-            (context as ReactApplicationContext)
+            val reactAppContext = currentContext as ReactApplicationContext
+            reactAppContext
                 .getJSModule(RCTEventEmitter::class.java)
                 .receiveEvent(
                     id,
@@ -586,7 +593,6 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
                 )
         }
     }
-
 
     private fun onPictureTaken(uri: String) {
         val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
