@@ -13,7 +13,7 @@ class OnCameraShowEventOld(
 
     override fun dispatch(rctEventEmitter: RCTEventEmitter) {
         rctEventEmitter.receiveEvent(
-            viewId,
+            this.viewTag,
             eventName,
             Arguments.createMap().apply {
                 putBoolean("isInit", isInit)
