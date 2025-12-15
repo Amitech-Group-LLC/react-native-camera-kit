@@ -562,11 +562,31 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun onCameraShow(isInit: Boolean) {
-            val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
+        Log.e(TAG, "IS_NEW_ARCHITECTURE_ENABLED: $BuildConfig.IS_NEW_ARCHITECTURE_ENABLED")
+        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+            val surfaceId = UIManagerHelper.getSurfaceId(context)
             UIManagerHelper
-                .getEventDispatcherForReactTag(currentContext, id)
-                ?.dispatchEvent(OnCameraShowEvent(surfaceId, id, isInit))
+                .getEventDispatcherForReactTag(context, id)
+                ?.dispatchEvent(
+                    com.rncamerakit.events.OnCameraShowEvent(
+                        surfaceId,
+                        id,
+                        isInit
+                    )
+                )
+        } else {
+            (context as ReactApplicationContext)
+                .getJSModule(RCTEventEmitter::class.java)
+                .receiveEvent(
+                    id,
+                    OnCameraShowEventOld.EVENT_NAME,
+                    Arguments.createMap().apply {
+                        putBoolean("isInit", isInit)
+                    }
+                )
+        }
     }
+
 
     private fun onPictureTaken(uri: String) {
         val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
