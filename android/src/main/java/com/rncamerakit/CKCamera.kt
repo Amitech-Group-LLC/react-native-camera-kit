@@ -565,7 +565,8 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun onCameraShow(isInit: Boolean) {
-        Log.e(TAG, "IS_NEW_ARCHITECTURE_ENABLED: ${BuildConfig.IS_NEW_ARCHITECTURE_ENABLED}")
+        Log.d(TAG, "onCameraShow fired, isInit: $isInit")
+        Log.d(TAG, "IS_NEW_ARCHITECTURE_ENABLED: ${BuildConfig.IS_NEW_ARCHITECTURE_ENABLED}")
 
         val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
