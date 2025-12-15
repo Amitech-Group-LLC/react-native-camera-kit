@@ -565,12 +565,9 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
     }
 
     private fun onCameraShow(isInit: Boolean) {
-        Log.d(TAG, "onCameraShow fired, isInit: $isInit")
-        Log.d(TAG, "IS_NEW_ARCHITECTURE_ENABLED: ${BuildConfig.IS_NEW_ARCHITECTURE_ENABLED}")
-
-        val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             val reactContext = currentContext as ReactContext
+            val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
             UIManagerHelper
                 .getEventDispatcherForReactTag(reactContext, id)
                 ?.dispatchEvent(
@@ -581,7 +578,7 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
                     )
                 )
         } else {
-            val reactAppContext = currentContext as ReactApplicationContext
+            val reactAppContext = currentContext.reactApplicationContext
             reactAppContext
                 .getJSModule(RCTEventEmitter::class.java)
                 .receiveEvent(
