@@ -29,8 +29,11 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.facebook.react.uimanager.UIManagerHelper
 import com.rncamerakit.barcode.BarcodeFrame
 import com.rncamerakit.BuildConfig
 import java.io.File
@@ -567,17 +570,19 @@ class CKCamera(context: ThemedReactContext) : FrameLayout(context), LifecycleObs
 
         val surfaceId = UIManagerHelper.getSurfaceId(currentContext)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+            val reactContext = currentContext as ReactContext
             UIManagerHelper
-                .getEventDispatcherForReactTag(currentContext as ReactContext, id)
+                .getEventDispatcherForReactTag(reactContext, id)
                 ?.dispatchEvent(
-                    com.rncamerakit.events.OnCameraShowEvent(
+                    OnCameraShowEvent(
                         surfaceId,
                         id,
                         isInit
                     )
                 )
         } else {
-            (currentContext as ReactApplicationContext)
+            val reactAppContext = currentContext as ReactApplicationContext
+            reactAppContext
                 .getJSModule(RCTEventEmitter::class.java)
                 .receiveEvent(
                     id,
